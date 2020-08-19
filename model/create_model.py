@@ -32,6 +32,14 @@ def mergeMeasurementsForecasts(measurements,forecasts):
     del weatherdata['longitude']
     del weatherdata['latitude']
     return weatherdata
+    
+def extractMonth(data):
+    """Skilar mánuði útfrá gefnum datetime"""
+    return data.month
+    
+def extractHour(data):
+    """Skilar klukkustund útfrá gefnum datetime"""
+    return data.hour
 
 def normalizeData(weatherdata):
     """Normalisera gögnin þannig öll gildi verða á bilinu -1 til 1
@@ -91,12 +99,16 @@ TRAINFRAC = 0.1
 HISTORY = 12
 FUTURE = 48
 BATCH_SIZE = 10
-COLUMNS = ['f10','d10','t2m','tp']
+COLUMNS = ['f10','d10','t2m','tp','man','klst']
 
 forecasts = opnaERA5Land('ollgogn.nc')
 measurements = opnaPM10maelingar('grensas_pm10_2019.xlsx')
 
 weatherdata = mergeMeasurementsForecasts(measurements,forecasts)
+weatherdata['timi'] = weatherdata.index
+weatherdata['man'] = weatherdata['timi'].apply(extractMonth)
+weatherdata['klst'] = weatherdata['timi'].apply(extractHour)
+del weatherdata['timi']
 normdata = normalizeData(weatherdata)
 historicaldata, forecastdata = prepareInputData(normdata,HISTORY,FUTURE)
 truedata = prepareOutputData(weatherdata,HISTORY,FUTURE)

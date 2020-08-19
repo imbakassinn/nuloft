@@ -55,8 +55,18 @@ def getWeatherdata(vi=True):
     vedurspa['t2m'] = vedurspa['t2m']+273.15 #Breyti úr C í Kelvin
     vedurspa['d10'] = vedurspa['d10']*(np.pi/180) #Breyti úr gráðum í Radíana
     vedurspa['tp'] = vedurspa['tp']/1000 #Breyti úr mm í m
+    vedurspa['man'] = vedurspa['dags_spar'].apply(extractMonth)
+    vedurspa['klst'] = vedurspa['dags_spar'].apply(extractMonth)
     vedurspa = vedurspa[COLUMNS].iloc[0:FUTURE]
     return vedurspa,dags,spadags
+    
+def extractMonth(data):
+    """Skilar mánuði útfrá gefnum datetime"""
+    return pd.to_datetime(data).month
+    
+def extractHour(data):
+    """Skilar klukkustund útfrá gefnum datetime"""
+    return pd.to_datetime(data).hour
     
 def keyraLikan():
     pm10maelingar = getPM10data()
@@ -81,7 +91,7 @@ def keyraLikan():
     tfinput2 = np.array(tfinput2)
 
 
-    model = tf.keras.models.load_model('grensas')
+    model = tf.keras.models.load_model('grensasvegur')
 
     prediction = model.predict([np.array(tfinput2),np.array(tfinput1)])
     forecast = pd.DataFrame(list(zip(list(spadags),list(dags),prediction[0])),columns=['forecast_time','valid_time','pm10'])
@@ -90,4 +100,4 @@ def keyraLikan():
 #Fastar fyrir líkanið
 HISTORY = 12
 FUTURE = 48
-COLUMNS = ['f10','d10','t2m','tp']
+COLUMNS = ['f10','d10','t2m','tp','man','klst']
